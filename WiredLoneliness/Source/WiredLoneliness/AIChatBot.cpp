@@ -10,11 +10,12 @@
 #include <sapi.h>
 #include <map>
 
-AIChatBot::AIChatBot(string str) : botName(str), bQuit(0), userInput("null"), bTTSEngineInitialised(0), voice(NULL) {
+AIChatBot::AIChatBot(string str) : botName(str), bQuit(0), userInput("null") {
 	seedRandomGenerator();
-	initializeTTS_Engine();
 	loadDatabase();
 }
+
+AIChatBot::AIChatBot(){}
 
 charStruct transposList[] = {
 	{ " MYSELF ", " YOURSELF " },
@@ -79,37 +80,10 @@ void AIChatBot::loadDatabase()
 	fin.close();
 }
 
-void AIChatBot::initializeTTS_Engine()
-{
-	if (FAILED(::CoInitialize(NULL))) {
-		throw string("Unabe to initialize COM objects");
-	}
-
-	HRESULT hr = CoCreateInstance(CLSID_SpVoice, NULL, CLSCTX_ALL, IID_ISpVoice, (void**)&voice);
-
-	if (FAILED(hr)) {
-		throw string("Unable to initialize voice engine");
-	}
-
-	bTTSEngineInitialised = 1;
-}
-
-void AIChatBot::releaseTTS_Engine()
-{
-	if (bTTSEngineInitialised) {
-		voice->Release();
-		voice = NULL;
-		::CoUninitialize();
-	}
-}
-
 string AIChatBot::getInput(string input)
 {
-//	cout << ">";
-//	savePrevInput();
-//	getline(cin, userInput);
-
 	savePrevInput();
+	userInput = input;
 	return "> " + input;
 }
 
@@ -136,7 +110,6 @@ string AIChatBot::respond()
 	}
 
 	if (!botUnderstand()) {
-	//	updateUnknowInputList();
 		handleEvent("BOT DON'T UNDERSTAND**");
 	}
 
@@ -144,41 +117,26 @@ string AIChatBot::respond()
 		selectResponse();
 		preprocessResponse();
 		saveBotResponse();
+		saveInput();
 
 		if (botRepeat()) {
 			handleRepetition();
 		}
-
-	//	saveLog("AICHAT");
-	//	printResponse();
-		speak(botResponse);
-		return botResponse;
+		return printResponse();
 	}
 	return "";
 }
 
-void AIChatBot::speak(const string text)
-{
-	if (bTTSEngineInitialised) {
-		WCHAR *buffer = new WCHAR[text.length() + 1];
-		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, text.c_str(), -1, buffer, text.length() + 1);
-		voice->SetRate(-1);
-		voice->Speak(buffer, SPF_DEFAULT, NULL);
-		delete[] buffer;
-	}
-}
 
 void AIChatBot::signOn()
 {
 	handleEvent("SIGNON**");
 	selectResponse();
-	speak(botResponse);
 	printResponse();
 }
 
 void AIChatBot::findMatch()
 {
-	//fstream outFile("keywords.txt", ios::out);
 	listOfResponse.clear();
 
 	string bestKeyWord;
@@ -316,7 +274,6 @@ void AIChatBot::preprocessInput()
 	inputParser->cleanString(userInput);
 	inputParser->trimRight(userInput, ". ");
 	inputParser->lowercase(userInput);
-
 }
 
 void AIChatBot::preprocessResponse()
@@ -391,10 +348,6 @@ void AIChatBot::preprocessKeyWord(string & str, size_t startPost, size_t endPos,
 	}
 }
 
-void AIChatBot::addXmlTag(string & str)
-{
-}
-
 int AIChatBot::findRespPos(string str)
 {
 	int pos = -1;
@@ -409,41 +362,3 @@ int AIChatBot::findRespPos(string str)
 	}
 	return pos;
 }
-
-void AIChatBot::updateUnknowInputList()
-{
-	unknownFile << userInput << endl;
-}
-
-void AIChatBot::createUnknowFile()
-{
-	time_t ltime;
-	time(&ltime);
-	unknownFile.open("D:\\AIChat - FILES\\unknown.txt", ios::out | ios::app);
-	if (unknownFile.fail()) {
-		throw string("Can't save unknown input");
-	}
-	unknownFile << "\n\nUnknown input log - " << ctime(&ltime) << endl;
-}
-
-void AIChatBot::saveLog()
-{
-	time_t ltime;
-	time(&ltime);
-	logFile.open("D:\\AIChat - FILES\\log.txt", ios::out | ios::app);
-	if (logFile.fail()) {
-		throw string("Can't save conversation log");
-	}
-	logFile << "\n\nConversation log - " << ctime(&ltime) << endl;
-}
-
-void AIChatBot::saveLog(string str)
-{
-	if (str == "AICHAT") {
-		logFile << botResponse << endl;
-	}
-	else if (str == "USER") {
-		logFile << ">" << userInput << endl;
-	}
-}
-

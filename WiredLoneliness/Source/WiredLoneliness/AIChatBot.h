@@ -20,12 +20,10 @@ typedef struct {
 
 typedef map<string, vector<Response>> stringMap;
 
-/**
- * 
- */
 class WIREDLONELINESS_API AIChatBot
 {
 public:
+	AIChatBot();
 	AIChatBot(string str);
 
 	void seedRandomGenerator() {
@@ -34,16 +32,10 @@ public:
 
 	void loadDatabase();
 
-	~AIChatBot() {
-		releaseTTS_Engine();
-	}
-
-	void initializeTTS_Engine();
-	void releaseTTS_Engine();
+	~AIChatBot() {}
 
 	string getInput(string input);
 	string respond();
-	void speak(const string text);
 
 	void signOn();
 
@@ -74,6 +66,7 @@ public:
 	}
 
 	void saveInput() {
+		inputLog.push(userInput);
 		inputBackup = userInput;
 	}
 
@@ -141,40 +134,38 @@ public:
 	string findBestKey(vector<string> listOfKeys);
 	void preprocessKeyWord(string &str, size_t startPost, size_t endPos, size_t size);
 
-	void addXmlTag(string &str);
 	int findRespPos(string str);
-	void updateUnknowInputList();
 
-	void saveLog();
-	void saveLog(string str);
-	void createUnknowFile();
+	string backspaceFromInput(string input)
+	{
+		if (!input.empty())
+		{
+			input.pop_back();
+		}
+		return input;
+	}
+	string userInput;
+	string botResponse;
+	string prevUserInput;
+	string prevBotResponse;
 
 	private:
 		string botName;
 		string userName;
-		string userInput;
-		string botResponse;
-		string prevUserInput;
-		string prevBotResponse;
+		string inputBackup;
 		string botEvent;
 		string prevBotEvent;
-		string inputBackup;
 		string subject;
 		string keyWord;
 		string context;
 		string prevContext;
 		bool bQuit;
-		bool bTTSEngineInitialised;
-		ISpVoice *voice;
 
 		vector<string> listOfResponse;
 		vector<string> listOfUnknownInput;
 		stack<string> responseLog;
-
-		fstream logFile;
-		fstream unknownFile;
+		stack<string> inputLog;
 
 		stringMap knowledgeBase;
-
 		InputParser* inputParser = new InputParser();
 };

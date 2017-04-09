@@ -1,18 +1,5 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "WiredLoneliness.h"
 #include "InputParser.h"
-
-void InputParser::lowercase(string & str)
-{
-	int len = str.length();
-
-	for (int i = 0; i < len; ++i) {
-		if (str[i] >= 'a' && str[i] <= 'z') {
-			str[i] -= 'a' - 'A';
-		}
-	}
-}
 
 bool InputParser::isPunc(char c)
 {
@@ -106,3 +93,15 @@ void InputParser::tokenize(const string str, vector<string>& v)
 		v.push_back(buffer);
 	}
 }
+
+void InputParser::lowercase(string & str)
+{
+	int len = str.length();
+
+	for (int i = 0; i < len; ++i) {
+		if (str[i] >= 'a' && str[i] <= 'z') {
+			str[i] -= 'a' - 'A';
+		}
+	}
+}
+
