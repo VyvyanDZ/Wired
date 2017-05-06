@@ -28,5 +28,4 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = Aichat)
 	FString backspace(FString input);
-
 };
