@@ -41,7 +41,7 @@ size_t charStructSize = sizeof(transposList) / sizeof(transposList[0]);
 
 void AIChatBot::loadDatabase()
 {
-	fstream fin("D:\\AIChat - FILES\\script.txt", ios::in);
+	fstream fin("C:\\Users\\Vyvyan\\Downloads\\script.txt", ios::in);
 	if (fin.fail()) {
 		throw string("Unable to load database");
 	}
